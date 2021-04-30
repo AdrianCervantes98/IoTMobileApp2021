@@ -21,3 +21,6 @@ class VerifyUser extends GeneralEvent {}
 
 //Parte de products, evento de traer productos
 class GetProductsEvent extends GeneralEvent {}
+
+//Parte de products, evento de traer productos
+class GetMovementsEvent extends GeneralEvent {}

@@ -19,3 +19,9 @@ class CloudStoreGetProducts extends GeneralState {}
 
 //Parte de productos, estado de error de traer data
 class CloudStoreGetProductsError extends GeneralState {}
+
+//Parte de productos, estado de traer data
+class CloudStoreGetMovements extends GeneralState {}
+
+//Parte de productos, estado de error de traer data
+class CloudStoreGetMovementsError extends GeneralState {}

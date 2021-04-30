@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:IotApp/login/auth_provider.dart';
+import 'package:IotApp/models/movement.dart';
 import 'package:IotApp/models/product.dart';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,9 +21,14 @@ class GeneralBloc extends Bloc<GeneralEvent, GeneralState> {
   **********VARIABLES DE FIREBASE**********
   */
   var firebase = new Firestore();
+  //Variables para productos
   List<Product> productsList;
   List<DocumentSnapshot> documentsProdList;
   List<Product> get getProductsList => productsList;
+  //Variables para movimientos
+  var movementList;
+  List<DocumentSnapshot> documentsMovList;
+  List<Movement> get getMovementsList => movementList;
 
   GeneralBloc() : super(GeneralInitial());
 
@@ -76,6 +82,20 @@ class GeneralBloc extends Bloc<GeneralEvent, GeneralState> {
     /*
     **********FIN EVENTOS DE PRODUCTOS**********
     */
+    /*
+    **********MANEJO EVENTOS DE MOVIMIENTOS**********
+    */
+    else if (event is GetMovementsEvent) {
+      bool dataRetrieved = await _getMovements();
+      if (dataRetrieved) {
+        yield CloudStoreGetMovements();
+      } else {
+        yield CloudStoreGetMovementsError();
+      }
+    }
+    /*
+    **********FIN EVENTOS DE MOVIMIENTOS**********
+    */
   }
 
   //Función para traer productos
@@ -100,4 +120,65 @@ class GeneralBloc extends Bloc<GeneralEvent, GeneralState> {
       return false;
     }
   }
+
+  //Función para traer movimientos
+  Future<bool> _getMovements() async {
+    try {
+      var movs =
+          await firebase.collection("registros").getDocuments();
+      movementList = movs.documents
+          .map((movement) => Movement(
+                beacon: movement["beacon"],
+                timestamp: movement["timestamp"],
+                pRef: movement["producto"],
+              ))
+          .toList();
+      await _getProducts();
+      await _assignProducts(movementList);
+      movementList.forEach((element) {
+        element.product =  productsList[0];
+      });
+      print(movementList.first.product);
+      documentsMovList = movs.documents;
+      return true;
+    } catch (err) {
+      print(err.toString());
+      return false;
+    }
+  }
+  
+  Future<List<Movement>>_assignProducts(List<Movement> list) async {
+    try {
+      list.forEach((element) {
+        element.product =  _getAssociatedProduct(element.pRef);
+      });
+    return list;
+    } catch (err){
+      print(err.toString());
+      return null;
+    }
+  }
+
+  //Función para traer producto asociado al movimiento
+  Future<Product> _getAssociatedProduct(DocumentReference ds) async {
+    try {
+      Product producto;
+      await ds.get().then((DocumentSnapshot ds) {
+        producto = new Product(
+          beaconId: ds.data["BeaconID"],
+          cantidad: ds.data["Cantidad"],
+          disponible: ds.data["Disponible"],
+          id: ds.data["Id"],
+          imagen: ds.data["Imagen"],
+          nombre: ds.data["Nombre"]
+        );
+      });
+      print(producto.imagen);
+      return producto;
+    } catch (err) {
+      print(err.toString());
+      return null;
+    }
+  }
+
 }

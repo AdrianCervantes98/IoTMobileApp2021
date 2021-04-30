@@ -3,7 +3,7 @@ class Product {
   int cantidad;
   bool disponible;
   int id;
-  var imagen;
+  String imagen;
   String nombre;
 
   Product({this.beaconId, this.cantidad, this.disponible, this.id, this.imagen, this.nombre});
