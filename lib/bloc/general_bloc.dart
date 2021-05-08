@@ -129,7 +129,7 @@ class GeneralBloc extends Bloc<GeneralEvent, GeneralState> {
       movementList = movs.documents
           .map((movement) => Movement(
                 beacon: movement["beacon"],
-                timestamp: movement["timestamp"],
+                timestamp: movement["timestamp"].toDate(),
                 pRef: movement["producto"],
               ))
           .toList();
